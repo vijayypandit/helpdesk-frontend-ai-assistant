@@ -8,8 +8,8 @@ import { AvatarFallback } from '../components/ui/avatar';
 import { AvatarImage } from '../components/ui/avatar';
 import { Separator } from '../components/ui/separator';
 import { MessageBubble } from '../components/MessageBubble';
-
-
+import { sendMessagesToServer } from '../services/chat.service';
+import { v4 as v444 } from "uuid";
 const CHAT = [
 
     {
@@ -47,35 +47,11 @@ const CONVERSATION = [
         id: 1,
         author: "bot",
         text: "Hello ! How may i assist you with springboot today ?",
-        at: "10:00 AM",
-    },
-    {
-        id: 2,
-        author: "user",
-        text: "I want to create a new Spring Boot project. What are the initial steps?",
-        at: "10:05 AM",
-    },
-    {
-        id: 3,
-        author: "bot",
-        text: "Sure, you can use Spring Initializr to generate a new project. You'll need to choose your project's metadata, dependencies, and Java version.",
-        at: "10:07 AM",
-    },
-    {
-        id: 4,
-        author: "user",
-        text: "Which dependencies are commonly used for a basic web application?",
-        at: "10:10 AM",
-    },
-    {
-        id: 5,
-        author: "bot",
-        text: "For a basic web application, you'll typically need 'Spring Web' and 'Spring Boot DevTools'. If you're using a database, you'll also need the appropriate JDBC driver and a persistence framework like Spring Data JPA.",
-        at: "10:12 AM",
+        at: new Date().toLocaleDateString(),
     },
 
 
-]
+];
 
 function Chat() {
 
@@ -84,6 +60,15 @@ function Chat() {
     const [draft, setDraft] = useState("");
     const endRef = useRef(null);
     const [sending, setSending] = useState(true);
+    const [conversationId, setConversationId] = useState("");
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        const id = v444();
+        setConversationId(id);
+        inputRef.current.focus();
+
+    }, [])
 
     useEffect(() => {
         endRef.current?.scrollIntoView({ behaviour: "smooth" });
@@ -91,27 +76,40 @@ function Chat() {
     }, [messages])
 
     //send message function
-    function sendMessages() {
+    async function sendMessages() {
         const textMessage = draft.trim();
 
         if (!textMessage) return;
+        // console.log(draft)
+        // console.log("ConversationId" + conversationId)
 
-        console.log(draft)
-
-        setMessages([...messages,
+        setMessages(pre => [...pre,
         {
-            id: 3,
+            id: v444(),
+            author: "user",
+            text: draft,
+            at: new Date().toLocaleDateString(),
+        },
+        ])
+        const responseFromAI = await sendMessagesToServer(draft, conversationId)
+        console.log(responseFromAI);
+
+        //set message for AI response
+        setMessages(pre => [...pre,
+        {
+            id: v444(),
             author: "bot",
-            text: "Sure, you can use Spring Initializr to generate a new project. You'll need to choose your project's metadata, dependencies, and Java version.",
-            at: "10:07 AM",
-        }
-            ,
+                text: responseFromAI,
+                at: new Date().toLocaleDateString(),
+            },
         ])
         //call api to send message here
 
         //setMessages(...)
 
         //setDrafts
+        setDraft("");
+        inputRef.current.focus();
 
 
 
@@ -186,6 +184,7 @@ function Chat() {
                     <div className="border-t p-3">
                     <div className="mx-auto flex max-w-3xl intems-center gap-3">
                         <Input
+                            ref={inputRef}
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
                             placeholder="Write a message..."
