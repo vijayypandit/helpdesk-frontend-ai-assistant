@@ -78,9 +78,47 @@ const CONVERSATION = [
 ]
 
 function Chat() {
+
+    //variables
+    const [messages, setMessages] = useState(CONVERSATION);
+    const [draft, setDraft] = useState("");
+    const endRef = useRef(null);
+    const [sending, setSending] = useState(true);
+
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behaviour: "smooth" });
+
+    }, [messages])
+
+    //send message function
+    function sendMessages() {
+        const textMessage = draft.trim();
+
+        if (!textMessage) return;
+
+        console.log(draft)
+
+        setMessages([...messages,
+        {
+            id: 3,
+            author: "bot",
+            text: "Sure, you can use Spring Initializr to generate a new project. You'll need to choose your project's metadata, dependencies, and Java version.",
+            at: "10:07 AM",
+        }
+            ,
+        ])
+        //call api to send message here
+
+        //setMessages(...)
+
+        //setDrafts
+
+
+
+    }
     return (
 
-        <div className="mx-auto min-h-screen max-w-7xl
+        <div className="fixed top-0 left-0 right-0  mx-auto min-h-screen max-w-7xl
         grid grid-cols-1 md:grid-cols-[300px_minmax(0,1fr)] border-x">
 
             <div>
@@ -101,7 +139,9 @@ function Chat() {
                     <Separator />
                 </aside>
             </div>
-            <div>
+
+            {/* CHAT AREA Right Side */}
+
                 <section className="h-full border-l">
                     {/* Main Chat Area */}
 
@@ -127,29 +167,45 @@ function Chat() {
                                 <MoreVertical className={"h-4 w-4"} /></Button>
                         </div>
                     </div>
-                    {/*Chat Area */}
 
-                    <ScrollArea className={"flx-1"}>
-                        <div className="mx-auto max-w-3xl px-6 py-6 space-y-6">
+                {/*Chat Area */}
+                <ScrollArea className={"flx-1 h-[calc(100vh-190px)]"}>
+                    <div className="mx-auto max-w-3xl px-6 py-6 space-y-6">
                             {
-                                CONVERSATION.map((chat, index) =>
-                                    <MessageBubble key={chat.id} author={chat.author} at={chat.at}>
+                            messages.map((chat, index) =>
+                                <MessageBubble key={index} author={chat.author} at={chat.at}>
                                         {chat.text}
                                     </MessageBubble>
                                 )
                             }
                         </div>
+                    {/*adding ref to scroll to bottom*/}
+                    <div ref={endRef}></div>
                     </ScrollArea>
                     {/* composer*/}
                     <div className="border-t p-3">
+                    <div className="mx-auto flex max-w-3xl intems-center gap-3">
+                        <Input
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            placeholder="Write a message..."
+                            className={"flex-1 rounded-full"} />
+                        <Button
+                            enabled={!sending}
+                            onClick={sendMessages}
+                            className={'rounded-full px-5 '}>
+                            <Send className="h-4 w-4" /> <span>Send</span>
 
-                        <div className="mx-auto flex max-w-3xl intems-center gap-3"></div>
+                        </Button>
+
+                    </div>
                     </div>
                 </section>
             </div>
 
 
-        </div>
+
+
 
     )
 }
